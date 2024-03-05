@@ -1,25 +1,22 @@
-FROM python:3.10-slim
+FROM bitnami/pytorch:2.2.1-debian-12-r0
 
 WORKDIR /opt/blur
 
+USER 0
+
 # Dependencies
-RUN apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+RUN apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     # * Pillow
     libffi-dev \
     libfreetype6-dev \
     libfribidi-dev \
     libharfbuzz-dev \
-    libjpeg-turbo-progs \
-    libjpeg62-turbo-dev \
     liblcms2-dev \
     libopenjp2-7-dev \
     libtiff5-dev \
     libwebp-dev \
-    libssl-dev \
-    meson \
-    netpbm \
-    xvfb \
-    zlib1g-dev \
+    gcc \
+    libgl1 \
     # * sgblur
     libturbojpeg0-dev \
     libjpeg-turbo-progs \
