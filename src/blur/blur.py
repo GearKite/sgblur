@@ -10,7 +10,7 @@ from datetime import datetime
 import exifread
 import requests
 import turbojpeg
-from PIL import Image, ImageFilter, ImageOps
+from PIL import Image, ImageFilter, ImageOps, ImageDraw
 
 from ..detect import detect
 
@@ -18,7 +18,7 @@ jpeg = turbojpeg.TurboJPEG()
 
 crop_save_dir = '/tmp/sgblur/crops'
 
-def blurPicture(picture, keep, microservice: bool):
+def blurPicture(picture_bytes, keep, microservice: bool):
     """Blurs a single picture by detecting faces and licence plates.
 
     Parameters
@@ -41,12 +41,11 @@ def blurPicture(picture, keep, microservice: bool):
     tmp = '/dev/shm/blur%s.jpg' % pid
     tmpcrop = '/dev/shm/crop%s.jpg' % pid
 
-    picture_bytes = picture.file.read()
-
     with open(tmp, 'w+b') as jpg:
         jpg.write(picture_bytes)
         jpg.seek(0)
         tags = exifread.process_file(jpg, details=False)
+
     print("keep", keep, "original", os.path.getsize(tmp))
 
     # solve image orientation
@@ -56,20 +55,24 @@ def blurPicture(picture, keep, microservice: bool):
             print("after exiftran", os.path.getsize(tmp+'_tmp'))
             os.replace(tmp+'_tmp', tmp)
 
+    info, crop_rects = detect_parts_to_blur(picture_bytes, microservice, keep)
+
+    return blur_image_parts(tmp, tmpcrop, keep, crop_rects, info)
+
+def detect_parts_to_blur(picture_bytes, microservice, keep = None):
     if microservice:
-        info, crop_rects = call_detection_microservice(tmp, keep)
+        return call_detection_microservice(picture_bytes, keep)
     else:
         print("Detecting areas to blur locally...")
         result = detect.detector(picture_bytes)
         info = result["info"]
         crop_rects = result["crop_rects"]
+        return info, crop_rects
 
-    return blur_image_parts(tmp, tmpcrop, keep, crop_rects, info)
-
-def call_detection_microservice(tmp, keep):
+def call_detection_microservice(picture_bytes, keep):
     """Call the detection service at localhost:8001"""
     print("Calling detection service...")
-    files = {'picture': open(tmp,'rb')}
+    files = {'picture': picture_bytes}
     if keep == '2':
         r = requests.post('http://localhost:8001/detect/?cls=sign', files=files, timeout=10)
     else:
@@ -213,7 +216,6 @@ def blur_image_parts(tmp, tmpcrop, keep, crop_rects: list, info: list):
 
     return original, info
 
-
 def deblurPicture(picture, idx, salt):
     """Un-blur a part of a previously blurred picture by restoring the original saved part.
 
@@ -268,3 +270,26 @@ def deblurPicture(picture, idx, salt):
         return deblurred
     except:
         return None
+
+
+def create_mask(picture_bytes, picture: Image.Image):
+    """Draws a mask where the picture would be blurred"""
+    areas, _ = detect_parts_to_blur(picture_bytes, False)
+
+    output = Image.new(mode="1", size=picture.size)
+    output_draw = ImageDraw.Draw(output)
+
+    for rect in areas:
+        if rect['class'] == 'sign':
+            continue
+        xywh = rect["xywh"]
+
+        x = xywh[0]
+        y = xywh[1]
+        w = xywh[2]
+        h = xywh[3]
+
+        shape = [(x, y), (x + w, y + h)]
+        output_draw.rectangle(shape, fill="white")
+
+    return output
