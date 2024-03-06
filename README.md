@@ -52,9 +52,13 @@ source ./env/bin/activate
 Install python dependencies for the API:
 
 ```bash
-pip install -r requirements-api.txt
+pip install -r requirements.txt
 ```
 
+To use the CLI install these dependencies too:
+```bash
+pip install -r requirements-cli.txt
+```
 
 
 ## Usage
