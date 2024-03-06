@@ -1,14 +1,12 @@
-import os, subprocess
+import json
+import os
+
+import exifread
+import turbojpeg
+from ultralytics import YOLO
 
 os.environ['CUDA_VISIBLE_DEVICES'] = str(os.getpid() % 3)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-
-from ultralytics import YOLO
-import turbojpeg
-from PIL import Image, ImageFilter, ImageOps
-import hashlib, pathlib, time
-import exifread
-import json, uuid
 
 jpeg = turbojpeg.TurboJPEG()
 model = YOLO("./models/yolov8s_panoramax.pt")
