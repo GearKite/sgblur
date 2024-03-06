@@ -138,12 +138,9 @@ def blur_image_parts(tmp, tmpcrop, keep, crop_rects: list, info: list):
                 print('crop %sx%s -> recrop %sx%s' % (img.width, img.height, crop_rect[2], crop_rect[3]))
                 subprocess.run('jpegtran -crop %sx%s+0+0 %s > %s' % (img.width, img.height, tmpcrop, tmpcrop+'_tmp'), shell=True)
                 p = subprocess.run('jpegtran -progressive -optimize -copy all -trim -drop +%s+%s %s %s > %s' % (crop_rect[0], crop_rect[1], tmpcrop+'_tmp', tmp, tmp+'_tmp'), shell=True)
-                if img.height != crop_rect[3]:
-                    input()
 
             if p.returncode != 0 :
                 print('>>>>>> crop info: ',crop_info)
-                input()
                 # problem with original JPEG... we try to recompress it
                 subprocess.run('djpeg %s | cjpeg -optimize -smooth 10 -dct float -baseline -outfile %s' % (tmp, tmp+'_tmp'), shell=True)
                 # copy EXIF tags
