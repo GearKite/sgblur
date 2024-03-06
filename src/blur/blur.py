@@ -1,12 +1,16 @@
-import os, subprocess
+import hashlib
+import json
+import os
+import pathlib
+import subprocess
+import time
+import uuid
 from datetime import datetime
 
+import exifread
+import requests
 import turbojpeg
 from PIL import Image, ImageFilter, ImageOps
-import hashlib, pathlib, time
-import exifread
-import json, uuid
-import requests
 
 jpeg = turbojpeg.TurboJPEG()
 

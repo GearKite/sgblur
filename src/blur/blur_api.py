@@ -1,7 +1,9 @@
-from fastapi import FastAPI, UploadFile, Response
 import gc
-from . import blur
 import json
+
+from fastapi import FastAPI, HTTPException, Response, UploadFile
+
+from . import blur
 
 app = FastAPI()
 print("API is preparing to start...")
