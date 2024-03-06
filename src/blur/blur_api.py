@@ -5,6 +5,8 @@ from fastapi import FastAPI, HTTPException, Response, UploadFile
 
 from . import blur
 
+MICROSERVICE = True
+
 app = FastAPI()
 print("API is preparing to start...")
 
@@ -20,7 +22,7 @@ async def root():
 	response_class=Response
 )
 async def blur_picture(picture: UploadFile, keep: str | None = '0'):
-	blurredPic, blurInfo = blur.blurPicture(picture, keep)
+	blurredPic, blurInfo = blur.blurPicture(picture, keep, MICROSERVICE)
 
 	# For some reason garbage collection does not run automatically after
 	# a call to an AI model, so it must be done explicitely

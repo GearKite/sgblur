@@ -12,7 +12,7 @@ jpeg = turbojpeg.TurboJPEG()
 model = YOLO("./models/yolov8s_panoramax.pt")
 names = ['sign','plate','face']
 
-def detector(picture, cls=''):
+def detector(picture_bytes, cls=''):
     """Detect faces and licence plates in a single picture.
 
     Parameters
@@ -22,8 +22,8 @@ def detector(picture, cls=''):
 
     Returns
     -------
-    Bytes
-        the blurred image
+    dict
+        info and detected areas
     """
 
     pid = os.getpid()
@@ -32,7 +32,7 @@ def detector(picture, cls=''):
     tmp = '/dev/shm/detect%s.jpg' % pid
 
     with open(tmp, 'w+b') as jpg:
-        jpg.write(picture.file.read())
+        jpg.write(picture_bytes)
         jpg.seek(0)
         tags = exifread.process_file(jpg, details=False)
 
@@ -109,4 +109,4 @@ def detector(picture, cls=''):
                     "xywh": crop_rects[-1]
                 })
 
-    return(json.dumps({'info':info, 'crop_rects': crop_rects}))
+    return {'info':info, 'crop_rects': crop_rects}
