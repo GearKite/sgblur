@@ -24,7 +24,7 @@ RUN apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt ./
-RUN pip install -r ./requirements.txt
+RUN pip install --no-cache-dir -r ./requirements.txt
 
 # Source files
 COPY ./src ./src
